@@ -130,6 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         setState(() {
                           isLoading = false;
                         });
+                        if (!mounted) return;
                         Navigator.of(context).pushReplacement(
                           MaterialPageRoute(
                             builder: (context) => MainNavigationScreen(),
@@ -139,6 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         setState(() {
                           isLoading = false;
                         });
+                        if (!mounted) return;
                         ScaffoldMessenger.of(
                           context,
                         ).showSnackBar(SnackBar(content: Text(e.toString())));

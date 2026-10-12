@@ -1,3 +1,7 @@
+import 'package:dio/dio.dart';
+import 'package:ecommerce_app_huma_volve/core/networking/api_client.dart';
+import 'package:ecommerce_app_huma_volve/features/auth/sign_up/models/sign_up_req_model.dart';
+import 'package:ecommerce_app_huma_volve/features/auth/sign_up/screens/services/sign_up_sevices.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/widgets/custom_text_field.dart';
@@ -17,12 +21,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
   late final TextEditingController nameController;
   late final TextEditingController emailController;
   late final TextEditingController passwordController;
+  late final ApiClient apiClient;
+  late final SignUpServices signUpServices;
+  bool isLoading = false;
 
   @override
   void initState() {
     nameController = TextEditingController();
     emailController = TextEditingController();
     passwordController = TextEditingController();
+    apiClient = ApiClient();
+    signUpServices = SignUpServices(ApiClient());
 
     super.initState();
   }
@@ -111,18 +120,50 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 40),
                 PrimaryButton(
+                  isLoading: isLoading,
                   text: 'Sign Up',
                   onPressed: () async {
                     if (_formKey.currentState?.validate() ?? false) {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LoginScreen(),
-                        ),
-                      );
+                      try {
+                        final response = await signUpServices.signUp(
+                          SignUpReqModel(
+                            name: nameController.text,
+                            email: emailController.text,
+                            password: passwordController.text,
+                          ),
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Sign Up Successful! ID: ${response.id}',
+                            ),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            backgroundColor: AppTheme.primary,
+                          ),
+                        );
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LoginScreen(),
+                          ),
+                        );
+                      } on Exception catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Sign Up Failed!'),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            backgroundColor: AppTheme.error,
+                          ),
+                        );
+                      }
                     }
                   },
-                  isLoading: false,
                 ),
                 const SizedBox(height: 24),
                 Row(
