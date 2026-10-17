@@ -1,4 +1,8 @@
+import 'package:ecommerce_app_huma_volve/core/networking/api_client.dart';
+import 'package:ecommerce_app_huma_volve/features/home/cubit/home_cubit.dart';
+import 'package:ecommerce_app_huma_volve/features/home/services/home_services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme.dart';
 import '../../home/screens/home_screen.dart';
 import '../../cart/screens/cart_screen.dart';
@@ -14,16 +18,33 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = [
-    const HomeScreen(),
-    const CartScreen(),
-    const ProfileScreen(),
-  ];
+  // ✅ الصفحات بتتعمل مرة واحدة في initState مش في كل build
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    // ✅ إصلاح: homeServices بتستخدم الـ field مش local variable جديد
+    final homeServices = HomeServices(ApiClient());
+    final homeCubit = HomeCubit(homeServices);
+
+    _screens = [
+      BlocProvider(
+        create: (_) => homeCubit,
+        child: const HomeScreen(),
+      ),
+      const CartScreen(),
+      const ProfileScreen(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_currentIndex],
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _screens,
+      ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: [
